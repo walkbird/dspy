@@ -64,11 +64,7 @@ class LM(ABC):
                 ):
                     printed.append((prompt, x["response"]))
                 elif provider == "anthropic":
-                    blocks = [
-                        {"text": block.text}
-                        for block in x["response"].content
-                        if block.type == "text"
-                    ]
+                    blocks = [{"text": block.text} for block in x["response"].content if block.type == "text"]
                     printed.append((prompt, blocks))
                 elif provider == "cohere":
                     printed.append((prompt, x["response"].text))
@@ -78,6 +74,8 @@ class LM(ABC):
                     printed.append((prompt, x))
                 elif provider == "you.com":
                     printed.append((prompt, x["response"]["answer"]))
+                elif provider == "qianfan":
+                    printed.append((prompt, x["response"]["body"]["result"]))
                 else:
                     printed.append((prompt, x["response"]["choices"]))
 
@@ -105,6 +103,7 @@ class LM(ABC):
                 "premai",
                 "you.com",
                 "tensorrt_llm",
+                "qianfan",
             ):
                 text = choices
             elif provider == "openai" or provider == "ollama" or provider == "llama":
@@ -123,9 +122,14 @@ class LM(ABC):
 
             if len(choices) > 1 and isinstance(choices, list):
                 choices_text = f" \t (and {len(choices)-1} other completions)"
-                printing_value += self.print_red(
-                   choices_text, end="",
-                ) if color_format else choices_text
+                printing_value += (
+                    self.print_red(
+                        choices_text,
+                        end="",
+                    )
+                    if color_format
+                    else choices_text
+                )
 
             printing_value += "\n\n\n"
 
@@ -138,14 +142,15 @@ class LM(ABC):
 
     def tracker_call(self, tracker, prompt=None, output=None, name=None, **kwargs):
         from dsp.trackers.base import BaseTracker
+
         assert issubclass(tracker.__class__, BaseTracker), "tracker must be a subclass of BaseTracker"
         assert self.history, "tracker.call() requires a previous request"
 
         last_req = self.history[-1]
         if not prompt:
-            prompt = last_req.get('prompt', None)
+            prompt = last_req.get("prompt", None)
         if not output:
-            output = last_req.get('response', None)
+            output = last_req.get("response", None)
         kwargs = {**self.kwargs, **kwargs}
         name = name if name else self.__class__.__name__
         tracker.call(i=prompt, o=output, name=name, **kwargs)
