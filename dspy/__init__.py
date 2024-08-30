@@ -48,6 +48,8 @@ AWSMistral = dsp.AWSMistral
 AWSAnthropic = dsp.AWSAnthropic
 AWSMeta = dsp.AWSMeta
 
+QianfanLM = dsp.QianfanLM
+
 Watsonx = dsp.Watsonx
 PremAI = dsp.PremAI
 
